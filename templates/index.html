@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='/images/logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>PlasticVision</title>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Columna izquierda -->
+        <section class="info">
+            <h1>♻️ Clasificador de Plásticos ♻️</h1>
+            <h2>LAS 3R</h2>
+
+            <h3>♻REDUCE♻</h3>
+            <p>'Hacer(se) más pequeño' , 'transformar(se) en algo de menor importancia o valor' , 'limitar(se) o ceñir(se) a algo' , 'someter [a alguien que ofrece resistencia]' y, en un vehículo, 'cambiar a una velocidad inferior'</p>
+
+            <h3>♻RECICLA♻</h3>
+            <p>Reciclar es el proceso de transformar residuos en nuevos productos o materia prima para su posterior uso...</p>
+
+            <h3>♻REUTILIZA♻</h3>
+            <p>La reutilización se refiere al proceso en el que los productos o materiales que se han usado una vez vuelven a utilizarse...</p>
+        </section>
+
+        <!-- Columna derecha -->
+        <section class="clasificador">
+            <header>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+            </header>
+
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="submit">Subir y Clasificar</button>
+            </form>
+
+            {% if filename %}
+            <div class="result">
+                <h2>Resultado</h2>
+                <p><strong>Tipo de plástico:</strong> {{ label }}</p>
+                <p><strong>Confianza:</strong> {{ confidence }}%</p>
+                <img src="{{ url_for('display_image', filename=filename) }}" alt="Imagen subida">
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</body>
+</html>

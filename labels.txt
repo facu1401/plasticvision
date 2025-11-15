@@ -1,0 +1,5 @@
+0 PET (botellas de plástico)
+1 HDPE (envases rígidos como detergentes o garrafas)
+2 PP (tapas, pajitas, envases)
+3 PS(Bolsas de plástico, envoltorios flexibles)
+4 Otros (Plásticos mezclados, policarbonato, caños)
