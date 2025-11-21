@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='/images/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>PlasticVision</title>
 </head>
-
 <body>
     <div class="container">
         <!-- Columna izquierda -->
@@ -41,7 +40,7 @@
                 <h2>Resultado</h2>
                 <p><strong>Tipo de plástico:</strong> {{ label }}</p>
                 <p><strong>Confianza:</strong> {{ confidence }}%</p>
-                <img src="{{ url_for('display_image', filename=filename) }}" alt="Imagen subida">
+                <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Imagen subida">
             </div>
             {% endif %}
         </section>

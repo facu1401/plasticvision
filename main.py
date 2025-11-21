@@ -1,38 +1,68 @@
-from flask import Flask, render_template,request
-from model import plastic_vision_clasificator
+from flask import Flask, render_template, request
+from werkzeug.utils import secure_filename
 import os
-# Configuramos la app y le decimos dónde está la carpeta static
-app = Flask(__name__, static_folder="static", static_url_path="/static")
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import numpy as np
 
-# Ruta principal solamente muestra la página
-@app.route("/", methods=["GET", "POST"])
+app = Flask(__name__)
+
+# Carpeta para guardar las imágenes subidas
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ruta del modelo
+MODEL_PATH = 'keras_model.h5'
+
+# Verificar si el modelo existe
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"No se encontró el modelo en {MODEL_PATH}")
+
+# Cargar el modelo
+model = load_model(MODEL_PATH)
+
+# Cargar etiquetas desde labels.txt
+LABELS_PATH = 'labels.txt'
+with open(LABELS_PATH, 'r', encoding='utf-8') as f:
+    CLASS_NAMES = [line.strip() for line in f.readlines()]
+
+def predict_image(img_path):
+    """Predice la clase y confianza de la imagen"""
+    img = image.load_img(img_path, target_size=(224, 224))  # Ajustar tamaño según tu modelo
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = x / 255.0  # Normalización si tu modelo la requiere
+
+    preds = model.predict(x)
+    class_idx = np.argmax(preds[0])
+    confidence = preds[0][class_idx]
+
+    return CLASS_NAMES[class_idx], confidence
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    filename = None
+    label = None
+    confidence = None
 
-    if request.method == "POST":
-        file = request.files.get("file")
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if file:
+            # Guardar archivo de forma segura
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
 
-        if not file:
-            return render_template("index.html", error="No enviaste ninguna imagen.")
+            # Predecir con el modelo
+            label, confidence = predict_image(file_path)
+            confidence = round(confidence * 100, 2)  # Convertir a porcentaje
 
-        filepath = os.path.join("images_2", file.filename)
-        file.save(filepath)
+    return render_template('index.html',
+                           filename=filename,
+                           label=label,
+                           confidence=confidence)
 
-        # --- Aquí llamas tu modelo ---
-        nombre_clase, valor_seguridad = plastic_vision_clasificator(filepath)
-
-        valor_seguridad *= 100  # convertir a %
-        valor_seguridad = round(valor_seguridad, 2)
-
-        # Enviar al HTML
-        return render_template(
-            "index.html",
-            filename=file.filename,
-            pred=nombre_clase,
-            seguridad=valor_seguridad
-        )
-
-    return render_template("index.html")
-
-# Ejecutamos el servidor
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
